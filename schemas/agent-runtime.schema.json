@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/agent-runtime.schema.json",
+  "title": "Agent Runtime Config",
+  "description": "Portable runtime policy for deriving tool-specific AI harness configuration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "model",
+    "runtime",
+    "safety"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "reasoning"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "fast",
+            "balanced",
+            "powerful"
+          ],
+          "description": "Portable model tier. Adapters map this to provider-specific model names."
+        },
+        "reasoning": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ]
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filesystem",
+        "approval",
+        "network_access",
+        "tools"
+      ],
+      "properties": {
+        "filesystem": {
+          "type": "string",
+          "enum": [
+            "read-only",
+            "workspace-write"
+          ]
+        },
+        "approval": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "guarded-auto",
+            "full-auto"
+          ],
+          "description": "Portable approval intent. Adapters degrade where exact behavior is unavailable."
+        },
+        "network_access": {
+          "type": "boolean"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "shell",
+              "read",
+              "edit",
+              "write",
+              "glob",
+              "grep",
+              "web_fetch",
+              "web_search"
+            ]
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protected_paths",
+        "dangerous_shell_commands"
+      ],
+      "properties": {
+        "protected_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dangerous_shell_commands": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ask"
+          ],
+          "properties": {
+            "ask": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "claude_md_excludes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sandbox_mode": {
+              "type": "string",
+              "enum": [
+                "read-only",
+                "workspace-write",
+                "danger-full-access"
+              ],
+              "description": "Codex-only compatibility override. Prefer runtime.filesystem as the portable source of truth."
+            },
+            "approval_policy": {
+              "type": "string",
+              "enum": [
+                "on-request",
+                "untrusted",
+                "never"
+              ],
+              "description": "Codex-only compatibility override. Prefer runtime.approval as the portable source of truth."
+            },
+            "network_access": {
+              "type": "boolean",
+              "description": "Codex-only compatibility override. Prefer runtime.network_access as the portable source of truth."
+            }
+          }
+        }
+      }
+    }
+  }
+}

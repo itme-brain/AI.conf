@@ -1,0 +1,21 @@
+# Claude agent memory (project-scoped, committed per-project — not here)
+# Uncomment if you want to exclude agent memory from this repo:
+# .claude/agent-memory/
+
+# Local settings overrides
+settings.local.json
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Generated output (derived from source templates via generate.py)
+settings.json
+claude/
+codex/
+opencode/agents/
+opencode/AGENTS.md
+opencode/opencode.json
+.claude
+.codex
+.direnv

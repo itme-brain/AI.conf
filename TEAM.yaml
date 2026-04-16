@@ -1,0 +1,322 @@
+version: 1
+
+agents:
+  order:
+    - architect
+    - auditor
+    - debugger
+    - documenter
+    - grunt
+    - researcher
+    - reviewer
+    - senior
+    - worker
+  items:
+    architect:
+      id: architect
+      name: architect
+      description: Research-first planning agent. Handles triage, research coordination, architecture design, and wave decomposition. Use before any non-trivial implementation task. Produces the implementation blueprint the entire team follows.
+      model: opus
+      effort: max
+      permission_mode: plan
+      tools:
+        - Read
+        - Glob
+        - Grep
+        - WebFetch
+        - WebSearch
+        - Write
+      disallowed_tools:
+        - Edit
+      max_turns: 35
+      skills:
+        - conventions
+        - message-schema
+      instruction_file: agents/architect.md
+    auditor:
+      id: auditor
+      name: auditor
+      description: Use after implementation — audits for security vulnerabilities and validates runtime behavior. Builds, tests, and probes acceptance criteria. Never modifies code.
+      model: sonnet
+      effort: ""
+      permission_mode: acceptEdits
+      tools:
+        - Read
+        - Glob
+        - Grep
+        - Bash
+        - WebFetch
+        - WebSearch
+      disallowed_tools:
+        - Write
+        - Edit
+      max_turns: 25
+      skills:
+        - conventions
+        - message-schema
+        - qa-checklist
+      background: true
+      instruction_file: agents/auditor.md
+    debugger:
+      id: debugger
+      name: debugger
+      description: Use immediately when encountering a bug, error, or unexpected behavior. Diagnoses root cause and applies a minimal targeted fix. Does not refactor or improve surrounding code.
+      model: sonnet
+      effort: ""
+      permission_mode: acceptEdits
+      tools:
+        - Read
+        - Write
+        - Edit
+        - Glob
+        - Grep
+        - Bash
+      disallowed_tools: []
+      max_turns: 20
+      skills:
+        - conventions
+        - worker-protocol
+        - message-schema
+        - qa-checklist
+      instruction_file: agents/debugger.md
+    documenter:
+      id: documenter
+      name: documenter
+      description: Use when asked to write or update documentation — READMEs, API references, architecture overviews, inline doc comments, or changelogs. Reads code first and updates documentation artifacts only.
+      model: sonnet
+      effort: high
+      permission_mode: acceptEdits
+      tools:
+        - Read
+        - Write
+        - Edit
+        - Glob
+        - Grep
+      disallowed_tools: []
+      max_turns: 20
+      skills:
+        - conventions
+        - worker-protocol
+        - message-schema
+        - qa-checklist
+      memory: project
+      instruction_file: agents/documenter.md
+    grunt:
+      id: grunt
+      name: grunt
+      description: Fast, cheap implementer for trivial and tightly scoped work. Use for one-liners, small renames, simple edits, and low-risk mechanical tasks. Escalate when the work grows beyond that scope.
+      model: haiku
+      effort: ""
+      permission_mode: acceptEdits
+      tools:
+        - Read
+        - Write
+        - Edit
+        - Glob
+        - Grep
+        - Bash
+      disallowed_tools: []
+      max_turns: 15
+      skills:
+        - conventions
+        - worker-protocol
+        - message-schema
+        - qa-checklist
+      isolation: worktree
+      instruction_file: agents/grunt.md
+    researcher:
+      id: researcher
+      name: researcher
+      description: Use to answer a specific research question with verified facts. Spawned in parallel — one instance per topic. Stateless. Returns verified facts, source URLs, and gotchas.
+      model: sonnet
+      effort: ""
+      permission_mode: plan
+      tools:
+        - Read
+        - Glob
+        - Grep
+        - WebFetch
+        - WebSearch
+      disallowed_tools:
+        - Write
+        - Edit
+      max_turns: 10
+      skills:
+        - message-schema
+      instruction_file: agents/researcher.md
+    reviewer:
+      id: reviewer
+      name: reviewer
+      description: Use after implementation — reviews code quality and verifies claims against source, docs, and acceptance criteria. Never modifies code.
+      model: sonnet
+      effort: ""
+      permission_mode: plan
+      tools:
+        - Read
+        - Glob
+        - Grep
+        - WebFetch
+        - WebSearch
+      disallowed_tools:
+        - Write
+        - Edit
+      max_turns: 20
+      skills:
+        - conventions
+        - message-schema
+        - qa-checklist
+      instruction_file: agents/reviewer.md
+    senior:
+      id: senior
+      name: senior
+      description: Strong implementer for ambiguous, architectural, or high-risk work. Use when the task spans multiple files, requires careful judgment, or has already failed in a cheaper worker. Default escalation path for hard implementation work.
+      model: opus
+      effort: ""
+      permission_mode: acceptEdits
+      tools:
+        - Read
+        - Write
+        - Edit
+        - Glob
+        - Grep
+        - Bash
+      disallowed_tools: []
+      max_turns: 35
+      skills:
+        - conventions
+        - worker-protocol
+        - message-schema
+        - qa-checklist
+      isolation: worktree
+      instruction_file: agents/senior.md
+    worker:
+      id: worker
+      name: worker
+      description: Balanced implementer for standard development work. Use when the task is well-defined but not trivial. Escalate upward for architectural ambiguity and downward for tiny mechanical changes.
+      model: sonnet
+      effort: ""
+      permission_mode: acceptEdits
+      tools:
+        - Read
+        - Write
+        - Edit
+        - Glob
+        - Grep
+        - Bash
+      disallowed_tools: []
+      max_turns: 25
+      skills:
+        - conventions
+        - worker-protocol
+        - message-schema
+        - qa-checklist
+      isolation: worktree
+      instruction_file: agents/worker.md
+
+skills:
+  order:
+    - conventions
+    - message-schema
+    - orchestrate
+    - qa-checklist
+    - worker-protocol
+  items:
+    conventions:
+      id: conventions
+      name: conventions
+      description: Core coding conventions and quality priorities for all projects.
+      instruction_file: skills/conventions/SKILL.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+      install_mode: shared
+    message-schema:
+      id: message-schema
+      name: message-schema
+      description: Typed envelope schema for all inter-agent communication. Defines message types, required fields, and signal routing contracts.
+      instruction_file: skills/message-schema/SKILL.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+      install_mode: shared
+    orchestrate:
+      id: orchestrate
+      name: orchestrate
+      description: Orchestration framework for decomposing and delegating complex tasks to the agent team. Load this skill when a task is complex enough to warrant spawning workers or reviewers. Covers task tiers, planning pipeline, wave dispatch, review, and git flow.
+      instruction_file: skills/orchestrate/SKILL.md
+      applies_to:
+        - claude
+        - codex
+      install_mode: shared
+    qa-checklist:
+      id: qa-checklist
+      name: qa-checklist
+      description: Self-validation checklist. All workers run this against their own output before returning results.
+      instruction_file: skills/qa-checklist/SKILL.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+      install_mode: shared
+    worker-protocol:
+      id: worker-protocol
+      name: worker-protocol
+      description: Standard output format, feedback handling, and operational procedures for all worker agents.
+      instruction_file: skills/worker-protocol/SKILL.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+      install_mode: shared
+
+rules:
+  order:
+    - 01-session
+    - 03-git
+    - 04-tools
+    - 05-verification
+    - 06-context
+    - 07-research
+  items:
+    01-session:
+      id: 01-session
+      source_file: rules/01-session.md
+      applies_to:
+        - claude
+    03-git:
+      id: 03-git
+      source_file: rules/03-git.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+    04-tools:
+      id: 04-tools
+      source_file: rules/04-tools.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+    05-verification:
+      id: 05-verification
+      source_file: rules/05-verification.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+    06-context:
+      id: 06-context
+      source_file: rules/06-context.md
+      applies_to:
+        - claude
+        - codex
+        - opencode
+    07-research:
+      id: 07-research
+      source_file: rules/07-research.md
+      applies_to:
+        - claude
+        - codex
+        - opencode

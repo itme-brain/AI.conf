@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=./schemas/agent-runtime.schema.json
+
+version: 1
+
+model:
+  class: balanced
+  reasoning: medium
+
+runtime:
+  filesystem: workspace-write
+  approval: guarded-auto
+  network_access: false
+  tools:
+    - shell
+    - read
+    - edit
+    - write
+    - glob
+    - grep
+    - web_fetch
+    - web_search
+
+safety:
+  protected_paths:
+    - ~/.ssh/**
+    - ~/.aws/**
+    - ~/.gnupg/**
+    - "**/.env*"
+  dangerous_shell_commands:
+    ask:
+      - rm *
+      - rmdir *
+      - git push --force*
+      - git push -f*
+      - git reset --hard*
+      - git clean *
+      - chmod *
+      - dd *
+      - mkfs*
+      - shred *
+      - kill *
+      - killall *
+      - sudo *
+
+targets:
+  claude:
+    claude_md_excludes:
+      - .claude/agent-memory/**
+  codex:
+    # Intentional target override: Codex does not expose Claude-equivalent
+    # per-tool/path allow/deny/ask controls, so this repo runs Codex in
+    # full-auto with no sandbox and network enabled by default.
+    sandbox_mode: danger-full-access
+    approval_policy: never
+    network_access: true

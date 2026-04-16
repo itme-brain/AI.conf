@@ -1,0 +1,557 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/team.schema.json",
+  "title": "Team Protocol Config",
+  "description": "Portable team-level inventory and metadata for agents, skills, and rules. For v1 this schema enforces strict inventory membership/order; generator runtime still validates referenced files exist on disk.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "agents",
+    "skills",
+    "rules"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "agents": {
+      "$ref": "#/$defs/inventory_agents"
+    },
+    "skills": {
+      "$ref": "#/$defs/inventory_skills"
+    },
+    "rules": {
+      "$ref": "#/$defs/inventory_rules"
+    }
+  },
+  "$defs": {
+    "id_agent": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "id_skill": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "id_rule": {
+      "type": "string",
+      "pattern": "^[0-9]{2}-[a-z0-9-]+$"
+    },
+    "tool_name": {
+      "type": "string",
+      "enum": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "Bash",
+        "WebFetch",
+        "WebSearch"
+      ]
+    },
+    "target_name": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "codex",
+        "opencode"
+      ]
+    },
+    "agent_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "model",
+        "effort",
+        "permission_mode",
+        "tools",
+        "disallowed_tools",
+        "max_turns",
+        "skills",
+        "instruction_file"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id_agent"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "enum": [
+            "haiku",
+            "sonnet",
+            "opus"
+          ]
+        },
+        "effort": {
+          "type": "string",
+          "enum": [
+            "",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ]
+        },
+        "permission_mode": {
+          "type": "string",
+          "enum": [
+            "",
+            "plan",
+            "acceptEdits"
+          ]
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tool_name"
+          },
+          "uniqueItems": true
+        },
+        "disallowed_tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tool_name"
+          },
+          "uniqueItems": true
+        },
+        "max_turns": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_skill"
+          },
+          "uniqueItems": true
+        },
+        "background": {
+          "type": "boolean"
+        },
+        "memory": {
+          "type": "string",
+          "enum": [
+            "project"
+          ]
+        },
+        "isolation": {
+          "type": "string",
+          "enum": [
+            "worktree"
+          ]
+        },
+        "instruction_file": {
+          "type": "string",
+          "pattern": "^agents/[a-z0-9-]+\\.md$"
+        }
+      }
+    },
+    "skill_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "instruction_file",
+        "applies_to",
+        "install_mode"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id_skill"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instruction_file": {
+          "type": "string",
+          "pattern": "^skills/[a-z0-9-]+/SKILL\\.md$"
+        },
+        "applies_to": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/target_name"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "install_mode": {
+          "type": "string",
+          "enum": [
+            "shared"
+          ]
+        }
+      }
+    },
+    "rule_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source_file",
+        "applies_to"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id_rule"
+        },
+        "source_file": {
+          "type": "string",
+          "pattern": "^rules/[0-9]{2}-[a-z0-9-]+\\.md$"
+        },
+        "applies_to": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/target_name"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "inventory_agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Agent inventory for protocol v1. This schema enforces exact order, exact keys, and key/id equality for the current repository inventory.",
+      "required": [
+        "order",
+        "items"
+      ],
+      "properties": {
+        "order": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_agent"
+          },
+          "uniqueItems": true,
+          "const": [
+            "architect",
+            "auditor",
+            "debugger",
+            "documenter",
+            "grunt",
+            "researcher",
+            "reviewer",
+            "senior",
+            "worker"
+          ]
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "architect",
+            "auditor",
+            "debugger",
+            "documenter",
+            "grunt",
+            "researcher",
+            "reviewer",
+            "senior",
+            "worker"
+          ],
+          "properties": {
+            "architect": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "architect" }
+                  }
+                }
+              ]
+            },
+            "auditor": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "auditor" }
+                  }
+                }
+              ]
+            },
+            "debugger": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "debugger" }
+                  }
+                }
+              ]
+            },
+            "documenter": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "documenter" }
+                  }
+                }
+              ]
+            },
+            "grunt": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "grunt" }
+                  }
+                }
+              ]
+            },
+            "researcher": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "researcher" }
+                  }
+                }
+              ]
+            },
+            "reviewer": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "reviewer" }
+                  }
+                }
+              ]
+            },
+            "senior": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "senior" }
+                  }
+                }
+              ]
+            },
+            "worker": {
+              "allOf": [
+                { "$ref": "#/$defs/agent_item" },
+                {
+                  "properties": {
+                    "id": { "const": "worker" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "inventory_skills": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Skill inventory for protocol v1. This schema enforces exact order, exact keys, and key/id equality for the current repository inventory. The fixed v1 inventory does not include a separate 'project' skill entry.",
+      "required": [
+        "order",
+        "items"
+      ],
+      "properties": {
+        "order": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_skill"
+          },
+          "uniqueItems": true,
+          "const": [
+            "conventions",
+            "message-schema",
+            "orchestrate",
+            "qa-checklist",
+            "worker-protocol"
+          ]
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "conventions",
+            "message-schema",
+            "orchestrate",
+            "qa-checklist",
+            "worker-protocol"
+          ],
+          "properties": {
+            "conventions": {
+              "allOf": [
+                { "$ref": "#/$defs/skill_item" },
+                {
+                  "properties": {
+                    "id": { "const": "conventions" }
+                  }
+                }
+              ]
+            },
+            "message-schema": {
+              "allOf": [
+                { "$ref": "#/$defs/skill_item" },
+                {
+                  "properties": {
+                    "id": { "const": "message-schema" }
+                  }
+                }
+              ]
+            },
+            "orchestrate": {
+              "allOf": [
+                { "$ref": "#/$defs/skill_item" },
+                {
+                  "properties": {
+                    "id": { "const": "orchestrate" }
+                  }
+                }
+              ]
+            },
+            "qa-checklist": {
+              "allOf": [
+                { "$ref": "#/$defs/skill_item" },
+                {
+                  "properties": {
+                    "id": { "const": "qa-checklist" }
+                  }
+                }
+              ]
+            },
+            "worker-protocol": {
+              "allOf": [
+                { "$ref": "#/$defs/skill_item" },
+                {
+                  "properties": {
+                    "id": { "const": "worker-protocol" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "inventory_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Rule inventory for protocol v1. This schema enforces exact order, exact keys, and key/id equality for the current repository inventory.",
+      "required": [
+        "order",
+        "items"
+      ],
+      "properties": {
+        "order": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_rule"
+          },
+          "uniqueItems": true,
+          "const": [
+            "01-session",
+            "03-git",
+            "04-tools",
+            "05-verification",
+            "06-context",
+            "07-research"
+          ]
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "01-session",
+            "03-git",
+            "04-tools",
+            "05-verification",
+            "06-context",
+            "07-research"
+          ],
+          "properties": {
+            "01-session": {
+              "allOf": [
+                { "$ref": "#/$defs/rule_item" },
+                {
+                  "properties": {
+                    "id": { "const": "01-session" }
+                  }
+                }
+              ]
+            },
+            "03-git": {
+              "allOf": [
+                { "$ref": "#/$defs/rule_item" },
+                {
+                  "properties": {
+                    "id": { "const": "03-git" }
+                  }
+                }
+              ]
+            },
+            "04-tools": {
+              "allOf": [
+                { "$ref": "#/$defs/rule_item" },
+                {
+                  "properties": {
+                    "id": { "const": "04-tools" }
+                  }
+                }
+              ]
+            },
+            "05-verification": {
+              "allOf": [
+                { "$ref": "#/$defs/rule_item" },
+                {
+                  "properties": {
+                    "id": { "const": "05-verification" }
+                  }
+                }
+              ]
+            },
+            "06-context": {
+              "allOf": [
+                { "$ref": "#/$defs/rule_item" },
+                {
+                  "properties": {
+                    "id": { "const": "06-context" }
+                  }
+                }
+              ]
+            },
+            "07-research": {
+              "allOf": [
+                { "$ref": "#/$defs/rule_item" },
+                {
+                  "properties": {
+                    "id": { "const": "07-research" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

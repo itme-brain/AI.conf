@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llama-stack": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Rigby Llama Stack",
+      "options": {
+        "baseURL": "https://ai.ramos.codes/stack/v1",
+        "apiKey": "{env:LLAMA_API_KEY}"
+      },
+      "models": {
+        "llamacpp/Qwen3.5-35B-A3B-Q6_K": {
+          "name": "Qwen3.5-35B-A3B-Q6_K",
+          "limit": {
+            "context": 262144,
+            "output": 8192
+          },
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        }
+      }
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  },
+  "mcp": {
+    "search": {
+      "type": "remote",
+      "url": "https://ai.ramos.codes/mcp/web_search/mcp",
+      "headers": {
+        "X-API-Key": "{env:LLAMA_API_KEY}"
+      },
+      "enabled": true
+    }
+  },
+  "model": "llama-stack/llamacpp/Qwen3.5-35B-A3B-Q6_K"
+}
