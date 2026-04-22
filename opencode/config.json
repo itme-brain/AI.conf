@@ -1,11 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "llama-stack": {
+    "rigby": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Rigby Llama Stack",
+      "name": "Self-Hosted",
       "options": {
-        "baseURL": "https://ai.ramos.codes/stack/v1",
+        "baseURL": "https://ai.ramos.codes/v1",
         "apiKey": "{env:LLAMA_API_KEY}"
       },
       "models": {
@@ -40,5 +40,5 @@
       "enabled": true
     }
   },
-  "model": "llama-stack/llamacpp/Qwen3.6-35B-A3B-UD-Q6_K"
+  "model": "rigby/llamacpp/Qwen3.6-35B-A3B-UD-Q6_K"
 }

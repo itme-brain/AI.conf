@@ -56,7 +56,7 @@ OPENCODE_BASE_CONFIG = OPENCODE_DIR / "config.json"
 OPENCODE_SKILLS_DIR = OPENCODE_DIR / "skills"
 
 ORCHESTRATE_SKILL = SCRIPT_DIR / "skills" / "orchestrate" / "SKILL.md"
-OPENCODE_MODEL_ID = "llama-stack/llamacpp/Qwen3.6-35B-A3B-UD-Q6_K"
+OPENCODE_MODEL_ID = "rigby/llamacpp/Qwen3.6-35B-A3B-UD-Q6_K"
 
 # ---------------------------------------------------------------------------
 # Template variable values per target
